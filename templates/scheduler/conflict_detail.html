@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block title %}{{ c.conflict_id }}{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>{{ c.conflict_id }} <span class="sev sev-{{ c.severity }} fs-6">{{ c.get_severity_display }}</span></h1><div class="sub">{{ c.get_conflict_type_display }}{% if c.date %} · {{ c.date|date:"l d F Y" }}{% endif %}</div></div>
+<a class="btn btn-light" href="{% url 'conflicts' %}?year={{ c.year }}&month={{ c.month }}">Back to conflicts</a></div>
+<div class="row g-3"><div class="col-lg-7"><div class="card mb-3"><div class="card-header">What is wrong</div><div class="card-body">
+<dl class="row mb-3"><dt class="col-sm-3 text-muted">Brand / process</dt><dd class="col-sm-9">{% if c.brand %}{{ c.brand }} / {{ c.process }}{% else %}—{% endif %}</dd><dt class="col-sm-3 text-muted">Employee</dt><dd class="col-sm-9">{{ c.employee|default:"—" }}</dd><dt class="col-sm-3 text-muted">Status</dt><dd class="col-sm-9">{{ c.get_status_display }}{% if c.note %} — {{ c.note }}{% endif %}</dd></dl>
+<h6>Explanation</h6><pre class="explain">{{ explanation }}</pre>
+<h6>Suggested resolution</h6><p class="mb-0">{{ c.suggestion|default:"No action required." }}</p></div></div></div>
+<div class="col-lg-5">
+{% if cands %}<div class="card mb-3"><div class="card-header">Eligible replacements</div><ul class="list-group list-group-flush">{% for k in cands %}<li class="list-group-item d-flex justify-content-between align-items-center gap-2"><div><strong>{{ k.employee.full_name }}</strong><div class="small text-muted">{{ k.why|capfirst }} · {{ k.busy }}</div></div>
+<form method="post" action="{% url 'conflict_assign' c.pk %}" data-confirm="Assign {{ k.employee.full_name }} as cover on {{ c.date|date:'d M' }}? They will also be registered as a backup resource for this brand/process.">{% csrf_token %}<input type="hidden" name="employee" value="{{ k.employee.pk }}"><button class="btn btn-sm btn-primary">Assign</button></form></li>{% endfor %}</ul></div>
+{% elif c.conflict_type == 'NO_COVERAGE' or c.conflict_type == 'INSUFFICIENT_STAFFING' %}<div class="alert alert-warning">No eligible replacement is free on this day.</div>{% endif %}
+{% if leave %}<div class="card mb-3"><div class="card-body"><p class="small">The roster still shows this employee working although leave is approved.</p><form method="post" action="{% url 'leave_apply' leave.pk %}">{% csrf_token %}<button class="btn btn-primary">Apply leave to roster</button></form></div></div>{% endif %}
+<div class="card"><div class="card-header">Manager decision</div><div class="card-body"><form method="post" action="{% url 'conflict_ack' c.pk %}">{% csrf_token %}
+{% if c.status == 'OPEN' %}<input class="form-control mb-2" name="note" placeholder="Reason for accepting this risk (optional)"><button class="btn btn-outline-secondary">Acknowledge</button>{% else %}<button class="btn btn-outline-secondary">Re-open</button>{% endif %}</form>
+{% if c.date and c.employee %}<a class="btn btn-link px-0" href="{% url 'entry_edit' c.employee.pk c.date|date:'Y-m-d' %}">Edit this employee's roster day</a>{% endif %}</div></div></div></div>
+{% endblock %}

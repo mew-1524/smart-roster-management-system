@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% load roster_extras %}{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Dashboard</h1><div class="sub">Live figures for {{ year }}-{{ month|stringformat:"02d" }}{% if period %} · roster {{ period.get_status_display|lower }}{% endif %}</div></div>
+  <form class="d-flex gap-2" method="get">{% include "partials/_month_picker.html" %}<button class="btn btn-sm btn-primary">View</button></form></div>
+{% if not roster_exists %}<div class="alert alert-info d-flex justify-content-between align-items-center">No roster exists for this month, so coverage figures are empty.
+  <a class="btn btn-sm btn-primary" href="{% url 'generate' %}?year={{ year }}&month={{ month }}">Generate roster</a></div>{% endif %}
+<div class="row g-3 mb-3">{% for label, val, icon, tone in cards %}
+  <div class="col-6 col-xl-3"><div class="card stat"><div class="ico ico-{{ tone }}"><i class="bi bi-{{ icon }}"></i></div><div><div class="val">{{ val }}</div><div class="lbl">{{ label }}</div></div></div></div>{% endfor %}</div>
+<div class="row g-3 mb-3">
+  <div class="col-lg-8"><div class="card"><div class="card-header">Monthly staffing overview <span class="text-muted fw-normal small">employees working per day</span></div><div class="card-body" style="height:280px"><canvas id="cDays"></canvas></div></div></div>
+  <div class="col-lg-4"><div class="card"><div class="card-header">Coverage status <span class="text-muted fw-normal small">brand-process days</span></div><div class="card-body" style="height:280px"><canvas id="cCov"></canvas></div></div></div>
+  <div class="col-lg-4"><div class="card"><div class="card-header">Employees by pod</div><div class="card-body" style="height:260px"><canvas id="cPods"></canvas></div></div></div>
+  <div class="col-lg-5"><div class="card"><div class="card-header">Primary employees by brand</div><div class="card-body" style="height:260px"><canvas id="cBrands"></canvas></div></div></div>
+  <div class="col-lg-3"><div class="card"><div class="card-header">Leave distribution</div><div class="card-body" style="height:260px"><canvas id="cLeaves"></canvas></div></div></div>
+</div>
+<div class="card"><div class="card-header">Recent activity</div><ul class="list-group list-group-flush">
+{% for a in activity %}<li class="list-group-item d-flex justify-content-between"><span>{{ a.text }}</span><span class="text-muted small">{{ a.user|default:"system" }} · {{ a.created_at|timesince }} ago</span></li>
+{% empty %}<li class="list-group-item text-muted">No activity yet.</li>{% endfor %}</ul></div>
+{{ charts|json_script:"chart-data" }}
+{% endblock %}
+{% block scripts %}<script>
+const C = JSON.parse(document.getElementById("chart-data").textContent);
+drawChart("cDays","line",C.days.labels,C.days.data,{options:{scales:{y:{beginAtZero:true}}}});
+drawChart("cCov","doughnut",C.coverage.labels,C.coverage.data,{colors:["#16a34a","#f59e0b","#dc2626"]});
+drawChart("cPods","doughnut",C.pods.labels,C.pods.data);
+drawChart("cBrands","bar",C.brands.labels,C.brands.data,{options:{indexAxis:"y",scales:{x:{ticks:{stepSize:1}}}}});
+drawChart("cLeaves","doughnut",C.leaves.labels,C.leaves.data);
+</script>{% endblock %}

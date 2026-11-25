@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}{{ mode }} {{ cfg.title|lower }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ mode }} {{ cfg.title|lower }}</h1></div>
+<div class="card" style="max-width:760px"><div class="card-body"><form method="post" novalidate>{% csrf_token %}
+{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+{% for f in form %}<div class="mb-3">{% if f.field.widget.input_type == 'checkbox' and not f.field.widget.allow_multiple_selected %}<div class="form-check">{{ f }}<label class="form-check-label" for="{{ f.id_for_label }}">{{ f.label }}</label></div>
+{% else %}<label class="form-label fw-semibold" for="{{ f.id_for_label }}">{{ f.label }}</label>{% if f.field.widget.allow_multiple_selected and f.field.widget.input_type == 'checkbox' %}<div class="d-flex flex-wrap gap-3">{% for c in f %}<div class="form-check">{{ c.tag }} <label class="form-check-label" for="{{ c.id_for_label }}">{{ c.choice_label }}</label></div>{% endfor %}</div>{% else %}{{ f }}{% endif %}{% endif %}
+{% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}{% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>{% endfor %}
+<button class="btn btn-primary">Save {{ cfg.title|lower }}</button> <a class="btn btn-light" href="{% url cfg.slug|add:'_list' %}">Cancel</a></form></div></div>
+{% endblock %}

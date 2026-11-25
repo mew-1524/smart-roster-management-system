@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% block title %}Roster Generator{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Roster Generator</h1><div class="sub">Deterministic, constraint-based — no randomness and no external AI.</div></div></div>
+<div class="row g-3"><div class="col-lg-5"><div class="card"><div class="card-header">Generate a month</div><div class="card-body"><form method="post">{% csrf_token %}
+<div class="d-flex gap-2 mb-3">{% include "partials/_month_picker.html" %}</div>
+<div class="form-check mb-3"><input class="form-check-input" type="checkbox" name="keep_manual" value="1" id="km" checked><label class="form-check-label" for="km">Keep manual edits (avoids unnecessary schedule changes)</label></div>
+{% if exists %}<div class="alert alert-warning py-2 small">A roster exists for this month. Generating replaces all generated entries.</div>{% endif %}
+<button class="btn btn-primary"><i class="bi bi-magic"></i> {% if exists %}Regenerate{% else %}Generate{% endif %} &amp; validate</button></form></div></div>
+<div class="card mt-3"><div class="card-header">How it works</div><div class="card-body small"><ol class="mb-0 ps-3">
+<li>Loads active employees, assignments, operating rules, holidays, approved leave and comp-offs.</li>
+<li>Rotating-off employees get one weekly off per week on the day that keeps coverage intact, honours their preference, and spreads offs fairly.</li>
+<li>Every available employee is rostered on each of their brand-process workloads that operate that day.</li>
+<li>Remaining gaps are filled by designated backup resources who are free.</li>
+<li>The validator checks every mandatory constraint; unresolved gaps are reported as conflicts, never hidden.</li></ol></div></div></div>
+<div class="col-lg-7"><div class="card"><div class="card-header">Existing rosters</div><div class="table-responsive"><table class="table mb-0"><thead><tr><th>Month</th><th>Status</th><th>Generated</th><th>Manual edits</th><th>Conflicts</th><th></th></tr></thead><tbody>
+{% for r in periods %}<tr><td>{{ r.p.year }}-{{ r.p.month|stringformat:"02d" }}</td><td>{{ r.p.get_status_display }}</td><td>{{ r.p.generated_at|date:"d M H:i"|default:"—" }}</td><td>{{ r.manual }}</td>
+<td>{{ r.total }}{% if r.critical %} <span class="sev sev-CRITICAL">{{ r.critical }} critical</span>{% endif %}</td><td class="text-end"><a class="btn btn-sm btn-light" href="{% url 'roster_home' %}?year={{ r.p.year }}&month={{ r.p.month }}">Open</a></td></tr>
+{% empty %}<tr><td colspan="6"><div class="empty"><i class="bi bi-calendar-plus"></i>No rosters yet.</div></td></tr>{% endfor %}</tbody></table></div></div></div></div>
+{% endblock %}

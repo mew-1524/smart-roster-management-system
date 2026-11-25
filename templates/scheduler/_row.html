@@ -1,0 +1,2 @@
+<tr><td class="who"><a class="text-reset" href="{% url 'employees_detail' r.emp.pk %}">{{ r.emp.full_name }}</a><small>{{ r.emp.employee_id }} · off: {{ r.emp.weekly_off_display }}</small></td>
+{% for c in r.cells %}<td class="{% if c.d.weekday == 6 %}sun{% endif %}"><a class="cell {{ c.cls }}{% if c.flag %} flag{% endif %}{% if c.manual %} manual{% endif %}" title="{{ c.title }}" href="{% url 'entry_edit' r.emp.pk c.d|date:'Y-m-d' %}">{{ c.code }}</a></td>{% endfor %}<td class="fw-semibold">{{ r.work }}</td></tr>

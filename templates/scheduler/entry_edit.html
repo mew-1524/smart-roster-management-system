@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% load roster_extras %}{% block title %}Edit roster entry{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>{{ emp.full_name }}</h1><div class="sub">{{ day|date:"l, d F Y" }} · weekly off: {{ emp.weekly_off_display }}</div></div></div>
+{% if not has_roster %}<div class="alert alert-info">No roster exists for this month; saving creates a manual entry.</div>{% endif %}
+{% if reason %}<div class="alert alert-secondary">Constraint on this day: <strong>{{ reason.1 }}</strong>. Scheduling this employee to work is invalid.</div>{% endif %}
+{% if issues %}<div class="alert alert-warning"><div class="fw-semibold mb-1">This change creates conflicts:</div><ul class="mb-2">{% for sev, msg in issues %}<li><span class="sev sev-{{ sev }}">{{ sev|title }}</span> {{ msg }}</li>{% endfor %}</ul>
+<div class="form-check"><input class="form-check-input" type="checkbox" name="confirm" value="1" id="cf" form="editform"><label class="form-check-label" for="cf"><strong>Save anyway</strong> — it will be saved and flagged on the Conflicts page.</label></div></div>{% endif %}
+<div class="card" style="max-width:760px"><div class="card-body"><form method="post" id="editform">{% csrf_token %}
+<label class="form-label fw-semibold">Day status</label><select class="form-select mb-3" name="status">{% for v, l in statuses %}<option value="{{ v }}" {% if v == state.status %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+<label class="form-label fw-semibold">Brand / process workloads <span class="fw-normal text-muted">(only used when Working)</span></label>
+<div class="border rounded p-2 mb-3" style="max-height:300px;overflow:auto">{% for o in options %}<div class="form-check"><input class="form-check-input" type="checkbox" name="pairs" value="{{ o.value }}" id="p{{ forloop.counter }}" {% if o.value in state.selected %}checked{% endif %}>
+<label class="form-check-label" for="p{{ forloop.counter }}">{{ o.label }} {% if o.assigned %}<span class="badge text-bg-primary">assigned</span>{% else %}<span class="badge text-bg-light border">not assigned</span>{% endif %} {% if not o.open %}<span class="badge text-bg-secondary">closed today</span>{% endif %}</label></div>{% endfor %}</div>
+<label class="form-label fw-semibold">Note</label><input class="form-control mb-3" name="note" maxlength="200" value="{{ state.note }}">
+<button class="btn btn-primary">Save &amp; validate</button> <a class="btn btn-light" href="{% url 'roster_home' %}?year={{ day.year }}&month={{ day.month }}">Cancel</a></form></div></div>
+{% endblock %}

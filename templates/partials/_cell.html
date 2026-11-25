@@ -1,0 +1,1 @@
+{% load roster_extras %}{% with k=cell|kind %}{% if k == 'link' %}<a href="{{ cell.2 }}">{{ cell.1 }}</a>{% elif k == 'badge' %}<span class="badge text-bg-{{ cell.2 }}">{{ cell.1 }}</span>{% else %}{{ cell }}{% endif %}{% endwith %}

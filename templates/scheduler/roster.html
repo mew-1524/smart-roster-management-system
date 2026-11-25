@@ -1,0 +1,48 @@
+{% extends "base.html" %}{% load roster_extras %}{% block title %}Monthly Roster{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Monthly Roster</h1><div class="sub">{{ year }}-{{ month|stringformat:"02d" }}
+  {% if period %}· <span class="badge text-bg-{% if period.status == 'PUBLISHED' %}success{% else %}secondary{% endif %}">{{ period.get_status_display }}</span>{% endif %}
+  {% if open_conflicts %}· <a href="{% url 'conflicts' %}?year={{ year }}&month={{ month }}" class="text-danger fw-semibold">{{ open_conflicts }} open conflict{{ open_conflicts|pluralize }}</a>{% endif %}</div></div>
+<div class="d-flex flex-wrap gap-2 align-items-center">
+  <form class="d-flex gap-2" method="get"><input type="hidden" name="view" value="{{ mode }}">{% include "partials/_month_picker.html" %}<button class="btn btn-sm btn-light">Go</button></form>
+  <form method="post" action="{% url 'generate' %}" {% if rv.roster_exists %}data-confirm="Regenerate this month's roster? Manual edits are kept when 'keep manual' is on."{% endif %}>{% csrf_token %}<input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}"><input type="hidden" name="keep_manual" value="1">
+    <button class="btn btn-sm btn-primary"><i class="bi bi-magic"></i> {% if rv.roster_exists %}Regenerate roster{% else %}Generate roster{% endif %}</button></form>
+  <form method="post" action="{% url 'validate' %}">{% csrf_token %}<input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-sm btn-outline-primary"><i class="bi bi-shield-check"></i> Validate roster</button></form>
+  <a class="btn btn-sm btn-outline-secondary" href="{% url 'roster_export' 'csv' %}?{{ querystring }}"><i class="bi bi-filetype-csv"></i> Export CSV</a>
+  <a class="btn btn-sm btn-outline-secondary" href="{% url 'roster_export' 'xlsx' %}?{{ querystring }}"><i class="bi bi-file-earmark-excel"></i> Export Excel</a>
+  {% if period and period.status != 'PUBLISHED' %}<form method="post" action="{% url 'publish' %}" data-confirm="Publish this roster? Publishing is blocked while critical conflicts are open.">{% csrf_token %}<input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-sm btn-success">Publish</button></form>{% endif %}
+</div></div>
+<ul class="nav nav-pills mb-3">{% for m in modes %}<li class="nav-item"><a class="nav-link py-1 {% if m == mode %}active{% endif %}" href="?year={{ year }}&month={{ month }}&view={{ m }}">{{ m|title }}{% if m != 'employee' %}-wise{% endif %}</a></li>{% endfor %}</ul>
+<div class="card mb-3"><div class="card-body py-2"><form class="row g-2 align-items-end" method="get">
+<input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}"><input type="hidden" name="view" value="{{ mode }}">
+<div class="col-md-2"><label class="form-label small mb-0">Employee</label><select name="employee" class="form-select form-select-sm"><option value="">All</option>{% for e in employees_all %}<option value="{{ e.pk }}" {% if f.employee == e.pk %}selected{% endif %}>{{ e.full_name }}</option>{% endfor %}</select></div>
+<div class="col-md-2"><label class="form-label small mb-0">Pod</label><select name="pod" class="form-select form-select-sm"><option value="">All</option>{% for p in pods %}<option value="{{ p.pk }}" {% if f.pod == p.pk %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></div>
+<div class="col-md-2"><label class="form-label small mb-0">Brand</label><select name="brand" class="form-select form-select-sm"><option value="">All</option>{% for b in brands %}<option value="{{ b.pk }}" {% if f.brand == b.pk %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></div>
+<div class="col-md-2"><label class="form-label small mb-0">Process</label><select name="process" class="form-select form-select-sm"><option value="">All</option>{% for p in processes %}<option value="{{ p.pk }}" {% if f.process == p.pk %}selected{% endif %}>{{ p.process_id }}</option>{% endfor %}</select></div>
+<div class="col-md-2"><label class="form-label small mb-0">Day range</label><div class="input-group input-group-sm"><input class="form-control" type="number" min="1" max="31" name="from" value="{{ rv.d1 }}"><span class="input-group-text">to</span><input class="form-control" type="number" min="1" max="31" name="to" value="{{ rv.d2 }}"></div></div>
+<div class="col-auto"><button class="btn btn-sm btn-primary">Apply filters</button> <a class="btn btn-sm btn-light" href="?year={{ year }}&month={{ month }}&view={{ mode }}">Reset</a></div></form></div></div>
+{% if not rv.roster_exists %}
+<div class="card"><div class="empty"><i class="bi bi-calendar-plus"></i>No roster has been generated for this month.<div class="mt-3"><form method="post" action="{% url 'generate' %}">{% csrf_token %}<input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}"><input type="hidden" name="keep_manual" value="1"><button class="btn btn-primary">Generate roster for {{ year }}-{{ month|stringformat:"02d" }}</button></form></div></div></div>
+{% else %}
+<div class="legend mb-2"><span><i class="st-work"></i>Working (W)</span><span><i class="st-off"></i>Weekly off (WO)</span><span><i class="st-leave"></i>Approved leave (L)</span><span><i class="st-comp"></i>Comp-off (CO)</span><span><i class="st-hol"></i>Public holiday (PH)</span><span><i class="st-none" style="border:1px solid #e2e8f0"></i>Unassigned (–)</span><span><i style="box-shadow:inset 0 0 0 2px #dc2626"></i>Conflict</span><span><i style="background:#2563eb;border-radius:50%;width:8px;height:8px"></i>Manual edit</span></div>
+{% if mode == 'employee' %}
+  {% if not calendar %}<div class="card"><div class="empty"><i class="bi bi-person"></i>Choose an employee in the filters above to see their month.</div></div>
+  {% else %}<div class="card mb-3"><div class="card-header">{{ calendar.emp.full_name }} <span class="text-muted fw-normal">· weekly off: {{ calendar.emp.weekly_off_display }}</span></div><div class="card-body">
+    <div class="mb-3">{% for k, v in calendar.counts.items %}<span class="badge text-bg-light border me-1">{{ k }}: {{ v }}</span>{% endfor %}</div>
+    <table class="table table-bordered cal mb-0"><thead><tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr></thead><tbody>
+    {% for week in calendar.weeks %}<tr>{% for c in week %}{% if c %}<td class="{{ c.cls }}"><div class="dn">{{ c.d.day }}</div><a class="text-reset fw-semibold" href="{% url 'entry_edit' calendar.emp.pk c.d|date:'Y-m-d' %}" title="{{ c.title }}">{{ c.code }}</a>{% if c.flag %} <i class="bi bi-exclamation-circle-fill text-danger"></i>{% endif %}<div class="small">{{ c.title|cut:calendar.emp.full_name }}</div></td>{% else %}<td class="bg-light"></td>{% endif %}{% endfor %}</tr>{% endfor %}
+    </tbody></table></div></div>{% endif %}
+{% else %}
+<div class="grid-wrap mb-4"><table class="roster"><thead><tr><th class="who">Employee</th>{% for d in days %}<th class="{% if d.sun %}sun{% endif %}" title="{{ d.hol }}">{{ d.day }}<br>{{ d.wd }}{% if d.hol %}<br><i class="bi bi-flag-fill text-primary" style="font-size:.6rem"></i>{% endif %}</th>{% endfor %}<th>Days</th></tr></thead><tbody>
+{% if mode == 'pod' %}{% for g in groups %}<tr class="podrow"><td colspan="{{ days|length|add:2 }}">{{ g.pod.name|default:"No pod" }}{% if g.pod.lead %} · lead {{ g.pod.lead.full_name }}{% endif %}</td></tr>
+  {% for r in g.rows %}{% include "scheduler/_row.html" %}{% endfor %}{% endfor %}
+{% else %}{% for r in rows %}{% include "scheduler/_row.html" %}{% endfor %}{% endif %}
+</tbody></table></div>
+{% if not rows and not groups %}<div class="empty">No employees match these filters.</div>{% endif %}
+{% if mode in 'company brand process pod' %}
+<h5 class="mb-2">Coverage by brand &amp; process <span class="text-muted fs-6 fw-normal">(scheduled / required)</span></h5>
+<div class="grid-wrap"><table class="roster"><thead><tr><th class="who">Brand · process</th>{% for d in days %}<th class="{% if d.sun %}sun{% endif %}">{{ d.day }}<br>{{ d.wd }}</th>{% endfor %}</tr></thead><tbody>
+{% for r in coverage %}<tr><td class="who">{{ r.label }} <span class="badge text-bg-light border">{{ r.process }}</span><small>{{ r.rule.calendar_display }} · min {{ r.rule.min_staff }}{% if r.bad %} · <span class="text-danger">{{ r.bad }} issue day{{ r.bad|pluralize }}</span>{% endif %}</small></td>
+{% for c in r.cells %}<td class="covc cov-{{ c.state }}" title="{{ c.title }}">{{ c.text }}</td>{% endfor %}</tr>{% empty %}<tr><td class="who">No brand/process matches the filters.</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% endif %}{% endif %}
+{% endblock %}

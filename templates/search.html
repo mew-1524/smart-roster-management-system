@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block title %}Search{% endblock %}
+{% block content %}<div class="page-head"><h1>Search</h1><div class="sub">Results for “{{ q }}”</div></div>
+<div class="row g-3">
+<div class="col-md-4"><div class="card"><div class="card-header">Employees</div><ul class="list-group list-group-flush">{% for e in employees %}<li class="list-group-item"><a href="{% url 'employees_detail' e.pk %}">{{ e.full_name }}</a> <span class="text-muted small">{{ e.employee_id }}</span></li>{% empty %}<li class="list-group-item text-muted">No matches</li>{% endfor %}</ul></div></div>
+<div class="col-md-4"><div class="card"><div class="card-header">Brands</div><ul class="list-group list-group-flush">{% for b in brands %}<li class="list-group-item"><a href="{% url 'brands_detail' b.pk %}">{{ b.name }}</a></li>{% empty %}<li class="list-group-item text-muted">No matches</li>{% endfor %}</ul></div></div>
+<div class="col-md-4"><div class="card"><div class="card-header">Processes</div><ul class="list-group list-group-flush">{% for p in processes %}<li class="list-group-item"><a href="{% url 'processes_detail' p.pk %}">{{ p.name }}</a></li>{% empty %}<li class="list-group-item text-muted">No matches</li>{% endfor %}</ul></div></div></div>
+{% endblock %}

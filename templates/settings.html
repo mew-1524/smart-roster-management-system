@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Settings</h1></div>
+<div class="row g-3"><div class="col-lg-6"><div class="card"><div class="card-header">Scheduling limits</div><div class="card-body"><form method="post">{% csrf_token %}
+{% for f in form %}<div class="mb-3"><label class="form-label fw-semibold">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>{% endfor %}
+<button class="btn btn-primary">Save settings</button></form></div></div>
+<div class="card mt-3"><div class="card-header">Data overview</div><ul class="list-group list-group-flush">{% for l, n in counts %}<li class="list-group-item d-flex justify-content-between"><span>{{ l }}</span><strong>{{ n }}</strong></li>{% endfor %}</ul></div></div>
+<div class="col-lg-6"><div class="card"><div class="card-header">Demonstration scenario</div><div class="card-body">
+<p>Runs the change-handling demo on the live roster: the <strong>sole employee of Brand A (Lumina Skincare)</strong> gets approved leave on a working day (critical coverage gap), and <strong>one member of Stellar Electronics' two-person CS team</strong> gets leave (remaining colleague keeps coverage).</p>
+<form class="d-inline" method="post" action="{% url 'demo_run' %}" data-confirm="Add two demo leaves and re-validate the roster?">{% csrf_token %}<button class="btn btn-primary"><i class="bi bi-play-fill"></i> Run demo scenario</button></form>
+<form class="d-inline" method="post" action="{% url 'demo_reset' %}" data-confirm="Remove all demo leaves?">{% csrf_token %}<button class="btn btn-outline-secondary">Remove demo leaves</button></form>
+{% if demo_leaves %}<hr><div class="small text-muted mb-1">Active demo leaves</div>{% for l in demo_leaves %}<div><a href="{% url 'leave_impact' l.pk %}">{{ l.employee.full_name }} · {{ l.start_date|date:"D d M" }}</a></div>{% endfor %}{% endif %}</div></div></div></div>
+{% endblock %}
