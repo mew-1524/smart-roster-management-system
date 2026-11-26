@@ -484,33 +484,6 @@ review important scheduling decisions.
 
 ------------------------------------------------------------------------
 
-## Testing
-
-Run the automated test suite with:
-
-``` cmd
-python manage.py test tests
-```
-
-The project README's original development test run recorded **40 passing
-tests**. The tests cover areas including:
-
--   Master data and assignment creation.
--   Single-resource and multi-resource scheduling.
--   Operating calendars, Sundays and holidays.
--   Approved leave and compensatory offs.
--   Minimum staffing and weekday overrides.
--   Rotating weekly offs.
--   Backup coverage and shift clashes.
--   Conflict detection after changes.
--   Manual roster editing and validation.
--   Publishing restrictions.
--   Exports, sample-data seeding and demo scenario behaviour.
-
-The recorded 40-test result refers to the development test run. Run the
-test suite in the environment you intend to submit or deploy, and report
-the result from that run.
-
 ------------------------------------------------------------------------
 
 ## Assessment questions: how I think
