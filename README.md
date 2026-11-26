@@ -11,11 +11,10 @@ managers information to make informed decisions.
 
 **Built for the DataStraw Technologies AI + Tech Intern assessment.**
 
-> **Project status:** The application has been run locally using Django
-> and MySQL. Database migrations and sample-data seeding completed
-> successfully against the local MySQL database. The application has
-> also been run locally in a browser. A public deployment must be
-> completed separately before sharing a public application URL.
+> **Project Status:** The application has been deployed on Render.
+> The project source code is publicly available on GitHub.
+> The application uses Django authentication. Database setup and
+> sample-data availability depend on the configured deployment database.
 
 ------------------------------------------------------------------------
 
@@ -613,54 +612,24 @@ the full workflow can be tested reliably. This would improve both the
 practical usefulness of the system and confidence in the final roster.
 
 ------------------------------------------------------------------------
-
 ## Deployment
 
-The application must be deployed to a public host before a public
-application URL can be submitted. The repository includes a `Procfile`
-and `build.sh` intended to support a platform that can run a Django
-application with Gunicorn.
+The application is deployed using Render.
 
-A typical deployment process is:
+**Live Application:**
+https://smart-roster-management-system-c1je.onrender.com/
 
-1.  Push the project source code to GitHub.
+**GitHub Repository:**
+https://github.com/mew-1524/smart-roster-management-system
 
-2.  Create a web service on a supported hosting platform.
+### Deployment Configuration
 
-3.  Configure the build command using the included build script, if
-    supported by the platform.
+- Hosting: Render
+- Backend: Django
+- Application Server: Gunicorn
+- Static Files: WhiteNoise
+- Build Script: `build.sh`
 
-4.  Configure the start command:
-
-    ``` bash
-    gunicorn config.wsgi
-    ```
-
-5.  Set environment variables in the hosting platform's dashboard:
-
-    -   `DJANGO_DEBUG=False`
-    -   `DJANGO_SECRET_KEY` with a long, unique secret value
-    -   `DJANGO_ALLOWED_HOSTS` with the deployed hostname
-    -   `DJANGO_CSRF_TRUSTED_ORIGINS` with the HTTPS origin
-    -   `DB_ENGINE`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST` and
-        `DB_PORT` for the production database
-    -   `DEMO_ADMIN_PASSWORD` if the seed command needs to create the
-        demo admin while debug mode is disabled
-
-6.  Run migrations and seed the demonstration data once.
-
-7.  Open the public URL and test login, roster generation, conflict
-    handling, static files and exports.
-
-Do not put production credentials in this README or commit a real `.env`
-file. Use the hosting provider's environment-variable settings.
-
-**Deployment status:** Add the actual public URL here after deployment
-is complete.
-
-``` text
-Application URL: Not deployed yet
-```
 
 ------------------------------------------------------------------------
 
@@ -694,13 +663,12 @@ Application URL: Not deployed yet
 
 ------------------------------------------------------------------------
 
-## Project submission
+## Project Submission
 
-For the DataStraw assessment, provide:
+**Application URL:**  
+https://smart-roster-management-system-c1je.onrender.com/
 
--   **Application URL:** Add the public deployed URL after deployment.
--   **GitHub repository:** Add the public repository URL.
--   **Demo video:** Add the link to the 3--5 minute walkthrough.
--   **Approach note:** Include a short summary of the architecture and
-    scheduling decisions.
--   **LinkedIn profile:** Add your accessible LinkedIn profile URL.
+**GitHub Repository:**  
+https://github.com/mew-1524/smart-roster-management-system
+
+
